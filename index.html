@@ -82,7 +82,8 @@ const hist = [];
 async function loadPdf(file, append) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   // PDF.js detaches the buffer it is given, so pass a copy and keep the original for saving
-  const doc = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+  // PDF.js 3.x font eval is exploitable (CVE-2024-4367); this is the upstream mitigation
+  const doc = await pdfjsLib.getDocument({ data: bytes.slice(), isEvalSupported: false }).promise;
   if (!append) { sources.length = 0; pages = []; hist.length = 0; sel = null; fileName = file.name.replace(/\.pdf$/i, ''); }
   const src = sources.push({ bytes, doc }) - 1;
   // shortcut: renders every page up front; fine for normal docs, switch to lazy rendering for 300+ page files
